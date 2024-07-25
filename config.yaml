@@ -1,0 +1,44 @@
+Region: us-west-2
+Image:
+  Os: ubuntu2204
+HeadNode:
+  InstanceType: m5a.xlarge
+  LocalStorage:
+    RootVolume:
+      Size: 100
+  Networking:
+    SubnetId: subnet-12345678912345654
+  Ssh:
+    KeyName: <your_keyname>
+  CustomActions:
+    OnNodeConfigured:
+      Sequence:
+        - Script: https://raw.githubusercontent.com/mmgxa/pcluster/main/config/pyxis.sh
+Scheduling:
+  Scheduler: slurm
+  SlurmQueues:
+    - Name: gpu-queues
+      CapacityType: SPOT
+      ComputeSettings:
+        LocalStorage:
+          # NVMe drives will be set in RAID0
+          EphemeralVolume:
+            MountDir: /opt/dlami/nvme
+      ComputeResources:
+        - Name: g6
+          Instances:
+            - InstanceType: g5.xlarge
+          MinCount: 1
+          MaxCount: 1
+          DisableSimultaneousMultithreading: true # HPC / GPU Applications
+          # Efa:
+          #   Enabled: true # if GPU instance > .8xlarge
+      Networking:
+        SubnetIds:
+          - subnet-12345678912345654
+        #PlacementGroup:
+        #  Enabled: true # if using multiple nodes
+      CustomActions:
+        OnNodeConfigured:
+          Sequence:
+            - Script: https://raw.githubusercontent.com/mmgxa/pcluster/main/config/pyxis.sh
